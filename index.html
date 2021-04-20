@@ -19,111 +19,137 @@
     tr:nth-child(even) {
       background-color: #dddddd;
     }
+
+    .red {
+      border: 2px solid red;
+    }
     </style>
 </head>
 
 <body>
-    <p>Enter numbers to test</p>
-    <form>
-        <input type="number" id="nr1" onchange="runTest()" placeholder="f.e 0.2 or 0.7"> <br>
-        <p>+</p>
-        <input type="number" id="nr2" value="0.1"  onchange="runTest()" > <br><br>
-        
-    </form>
+  <p>This test is made to find short solution for this: <br>
+    ***How to limit the length of result number, to fit it into 10-12 characters calculators display without loosing the accuracy?*** <br>
+    This is not a solution to a problem, but some kind of workaround. Errors still expected. <br>
+    Calculator itself is here: <a href="https://maksimurasov.github.io/TOP-Calculator/">https://maksimurasov.github.io/TOP-Calculator/</a>
+  <br><br>
+  </p>
+  
+  <p>Enter number to test:</p>
+  <form>
+      <input type="number" id="nr1" onchange="runTest()" placeholder="f.e 0.0000012345702000000000"> <br> <br> <br>
+      <!-- <p>+</p>
+      <input type="number" id="nr2" value="0" placeholder="f.e 0.1 or 0.7"  onchange="runTest()" > <br><br>
+       -->
+  </form>
 
-    <table>
-        <tr>
-            <th>a</th>
-            <th>b</th>
-            <th>Sum</th>
-            <th><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed">.toFixed(9)</a></th>
-            <th><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toPrecision">.toPrecision(10)</a></th>
-            <th><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat">.parseFloat</a></th>
-           
-        </tr>
-        <tr>
-            <td>The original value of first number, as string</td>
-            <td>The original value of second number, as string</td>
-            <td>Number(a) + Number(b)</td>
-            <td>it limits the amount of numbers after the floating point, does not suit if number is 12345.123456789 etc</td>
-            <td>it limits the amount of total numbers. but there is still problem with number like 0.0000007802474017 -  still too long</td>
-            <td>to eliminate all "0" after floating point, like 0.4000000000</td>
-        </tr>
-       
-    </table>
+  <table>
+    <tr>
+      <th>Input</th>
+      <!-- <th>b</th> -->
+      <th>Number()</th>
+      <th><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat">.parseFloat</a></th>
+      <th><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed">.toFixed(9)</a></th>
+      <th><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toPrecision">.toPrecision(6)</a></th>
+      <th>Solution</th>
+    </tr>
+    <tr>
+      <td>The original value of first number, as string</td>
+      <!-- <td>The original value of second number, as string</td> -->
+      <td>It converts string to number, but at same time converts number e-7 and bigger e to exponential, like 0.000000123 to 1.23e-7 </td>
+      <td>Could be used to eliminate all "0" after floating point, like 0.4000000000. But it converts
+        2.83e+20  to 283000000000000000000. therefore it is not suitable for all cases. 
+      </td>
+      <td>It limits the amount of numbers after the floating point. <br> Does not suit if number
+          is 12345.123456789. Also it converts 0.000000000000123 to 0, not good...</td>
+      <td>It limits the amount of total numbers.  Also have to limit to only (6) because
+        "e-300" (as tht biggest understood by browser) has already 5 characters. <br>
+        Still problem with 0.00000123457. <br>
+        Still has problem with 0.3000000. <br>
+        Number like 2.6235e+6 could easily fit into screen.</td>
+      <td>
+        First used Number(input).toPrecision(6);<br> <br>
+        Then two options: <br>
+        To solve 0.300000 : use parseFloat for non exponential numbers. <br>
+        To solve 0.00000123457 : useToFixed for numbers that have "0.00000"<br>
+        <br>
+        Still thre is little problem with number 1.23450e+9 = 1234500000, it could still have fit into display.
+      </td>
+    </tr>
+  </table>
 
 
 <script>
 
 const tableNode = document.querySelector("tbody");
   
-function runTest() {
+function runTest(inputFirstValue) {
 
-    let inputFirstValue = document.getElementById("nr1").value;
-    let inputSecondValue = document.getElementById("nr2").value;
-    console.log(inputFirstValue, inputSecondValue)
-    let number1 = Number(inputFirstValue)+Number(inputSecondValue);
+  inputFirstValue = document.getElementById("nr1").value || inputFirstValue;
+  // inputSecondValue = document.getElementById("nr2").value || inputSecondValue;
+  // console.log(inputFirstValue, inputSecondValue)
 
-
-    
-    // // let number = 0.0000012345678901234567889
-    // // let number = 123456789.1234456789123456
-    // let number = 0.7+0.2
-    // // let number = 3.260000000e-15
-    // // let number = 3.260000000e-7
-    // // let number = 3.260000000e-6
-    // // let number = 3.260000000e25
-
-
-    console.log(number1)
-    
-    number2 = Number(number1.toFixed(9) );  // .toFixed(9)  toFixed limits the amount of numbers after the floating point, does not suit if number is 12345.123456789 etc 
-        
-    console.log(number2)
-
-    number3 = number2.toPrecision(10);  //  .toPrecision limits the amount of total numbers. but there is still problem with number like 0.0000007802474017 -  still too long
-    console.log(number3)
-                     
-       
-        
-    number4 = Number.parseFloat(number3); // to eliminate all "0" after floating point, like 0.4000000000 
-    console.log(number4)
+  let number = Number(inputFirstValue);
+  // console.log(number)
   
-  showTheResults(inputFirstValue,inputSecondValue,number1,number2,number3,number4)
-}
+   let numberparsefloat = parseFloat(inputFirstValue); 
+  // console.log(numbertoprecision)
 
-function showTheResults(a,b,c,d,e,f){
-    let tdNode1Column = document.createElement("td");
-    let tdNode2Column = document.createElement("td");
-    let tdNode3Column = document.createElement("td");
-    let tdNode4Column = document.createElement("td");
-    let tdNode5Column = document.createElement("td");
-    let tdNode6Column = document.createElement("td");
+  let numbertofixed = Number(inputFirstValue).toFixed(9)  
+  // console.log(numbertofixed)
 
+  let numbertoprecision = Number(inputFirstValue).toPrecision(6);
+  // console.log(numbertofixed)
 
+  let solution = Number(inputFirstValue).toPrecision(6);  
+  // console.log(solution)
     
-    tdNode1Column.textContent = a;
-    tdNode2Column.textContent = b;
-    tdNode3Column.textContent = c;
-    tdNode4Column.textContent = d;
-    tdNode5Column.textContent = e;
-    tdNode6Column.textContent = f;
+  //to solve 0.300000
+  solution = !solution.toString().includes("e") ? parseFloat(solution) : solution;
+  // console.log(solution)
 
-
-
-        
-    let trNode = document.createElement("tr");
-    tableNode.appendChild(trNode);
-    let lastTrNode = document.querySelector("tbody").lastChild; 
-    lastTrNode.appendChild(tdNode1Column);
-    lastTrNode.appendChild(tdNode2Column);
-    lastTrNode.appendChild(tdNode3Column);
-    lastTrNode.appendChild(tdNode4Column);
-    lastTrNode.appendChild(tdNode5Column);
-    lastTrNode.appendChild(tdNode6Column);
-
-
+  // to solve 0.00000123457
+  solution = solution.toString().includes("0.00000") ? solution.toFixed(10) : solution;
+  // console.log(solution)
+  
+  
+  showTheResults(inputFirstValue,number,numberparsefloat,numbertofixed,numbertoprecision,solution)
 }
+
+
+function showTheResults(...array){
+  let trNode = document.createElement("tr");
+  let thirdRowNode = tableNode.children[2];
+  tableNode.insertBefore(trNode, thirdRowNode);
+
+  array.forEach( (e,i) => {
+    let tdNode = document.createElement("td");
+      tdNode.textContent = array[i];
+      trNode.appendChild(tdNode);
+      // console.log(e.toString().replace(".","").length);
+    if (e.toString().length>12) { //.replace(".","") 
+      tdNode.classList.add("red");              
+    }
+  });
+  
+}
+
+
+runTest("0.2000000000000004");
+runTest("0.000012345678901234567889");
+runTest("0.0000012345678901234567889");
+runTest("0.00000012345678901234567889");
+runTest("0.000000000000012345678901234567889");
+runTest("9.12345678901234567889");
+runTest("12345.1234567890123456789");
+runTest("1234567890123456788901234567890");
+runTest("0.300000000004");
+runTest("1.23000000000e300");
+runTest("1.2345e+5");
+runTest("1.2345e+7");
+runTest("1.2345e+9");
+runTest("1.2345e+11");
+
+
 
 
 </script>
